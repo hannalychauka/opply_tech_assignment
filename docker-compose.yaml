@@ -1,0 +1,48 @@
+version: '3'
+
+
+services:
+  opply-db-service:
+    container_name: opply-db-service
+    image: postgres:15.1-alpine
+    env_file: .env
+    ports:
+      - '5432:5432'
+
+  opply-db-migrator:
+    container_name: opply-db-migrator
+    build:
+      context: .
+    entrypoint: [ ]
+    command: [ './wait-for-it.sh', '${POSTGRES_HOST}:${POSTGRES_PORT}', '--', 'python', 'manage.py', 'migrate' ]
+    env_file: .env
+    volumes:
+      - ./opply/api:/home/app_user/opply_tech_assignment/api/
+      - ./opply/config:/home/app_user/opply_tech_assignment/config/
+      - ./opply/helpers:/home/app_user/opply_tech_assignment/helpers/
+      - ./opply/orders:/home/app_user/opply_tech_assignment/orders/
+      - ./opply/products:/home/app_user/opply_tech_assignment/products/
+      - ./opply/users:/home/app_user/opply_tech_assignment/users/
+    depends_on:
+      - opply-db-service
+
+  opply-api-service:
+    container_name: opply-api-service
+    entrypoint: [ ]
+    command: [ './wait-for-it.sh', '${POSTGRES_HOST}:${POSTGRES_PORT}', '--', 'python', 'manage.py', 'runserver', '0.0.0.0:8080' ]
+    env_file: .env
+    build:
+      context: .
+    ports:
+      - '8000:8080'
+    volumes:
+      - ./opply/api:/home/app_user/opply_tech_assignment/api/
+      - ./opply/config:/home/app_user/opply_tech_assignment/config/
+      - ./opply/helpers:/home/app_user/opply_tech_assignment/helpers/
+      - ./opply/orders:/home/app_user/opply_tech_assignment/orders/
+      - ./opply/products:/home/app_user/opply_tech_assignment/products/
+      - ./opply/users:/home/app_user/opply_tech_assignment/users/
+    depends_on:
+      - opply-db-service
+      - opply-db-migrator
+
