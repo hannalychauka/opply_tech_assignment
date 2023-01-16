@@ -6,7 +6,7 @@ from rest_framework.generics import ListAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 
 from orders.models import Order, OrderProductMapping
-from orders.serializers import ListOrderSerializer
+from orders.serializers import ListOrderSerializer, CreateOrderSerializer
 from products.models import Product
 
 
@@ -26,8 +26,8 @@ class ListOrderView(ListAPIView):
 
 
 class CreateOrderView(CreateAPIView):
+    serializer_class = CreateOrderSerializer
     permission_classes = [IsAuthenticated]
-    http_method_names = ('post', )
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer()
